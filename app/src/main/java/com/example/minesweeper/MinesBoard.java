@@ -3,6 +3,7 @@ package com.example.minesweeper;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -18,9 +19,9 @@ import androidx.annotation.Nullable;
 public class MinesBoard extends View {
     private String mExampleString;
     private int BlockColor;
-    private int RectangleColor;
+    private int RectangleColor,UncoveredRectangleColor;
     private int TextColor,RedColor,YellowColor;
-
+    private MineObject [][] minesarray= new MineObject[10][10];
 
     private float mExampleDimension = 0;
     private Drawable mExampleDrawable;
@@ -28,9 +29,9 @@ public class MinesBoard extends View {
     private TextPaint mTextPaint;
     private float mTextWidth;
     private float mTextHeight;
-    private Paint red, green, blue,black,white, p;
+    private Paint red, UncoveredBlock, blue,black,white, p;
     int paddingLeft ,paddingTop,paddingRight,paddingBottom,contentWidth,contentHeight;
-
+    //Canvas mycanvas;
 
     Rect square;
     int rectBounds;
@@ -66,6 +67,7 @@ public class MinesBoard extends View {
         RectangleColor=getResources().getColor(R.color.black);
         TextColor=getResources().getColor(R.color.white);
         RedColor=getResources().getColor(R.color.red);
+        UncoveredRectangleColor=getResources().getColor(R.color.grey);
 
         YellowColor=getResources().getColor(R.color.yellow);
         // Use getDimensionPixelSize or getDimensionPixelOffset when dealing with
@@ -92,9 +94,22 @@ public class MinesBoard extends View {
         paddingBottom = getPaddingBottom();
         contentWidth = getWidth() - paddingLeft - paddingRight;
         contentHeight = getHeight() - paddingTop - paddingBottom;
+        initMinesArray();
         // Update TextPaint and text measurements from attributes
         //invalidateTextPaintAndMeasurements();
 
+    }
+    public void initMinesArray(){
+       //minesarray = new MineObject[10][10];
+        for(int i=0;i<10;i++){
+            for( int j=0;j<10;j++){
+                minesarray[i][j]=new MineObject();
+                minesarray[i][j].col=j+1;
+                minesarray[i][j].row=i+1;
+                minesarray[i][j].covered=true;
+                minesarray[i][j].mine=false;
+            }
+        }
     }
 
     private void invalidateTextPaintAndMeasurements() {
@@ -133,6 +148,9 @@ public class MinesBoard extends View {
 
         p = new Paint(Paint.ANTI_ALIAS_FLAG);
         p.setColor(RectangleColor);
+
+        UncoveredBlock = new Paint(Paint.ANTI_ALIAS_FLAG);
+        UncoveredBlock.setColor(UncoveredRectangleColor);
 
         Paint textPainter = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPainter.setColor(TextColor);
@@ -183,10 +201,16 @@ public class MinesBoard extends View {
 
 
                 //Draw a square in this i,j position.
-                canvas.drawRect(square, p);
+                if(drawUncoveredRectangle(i,j)){
+                    canvas.drawRect(square,p );
+
+                }else{
+                    canvas.drawRect(square, UncoveredBlock);
+
+                }
                 //canvas.drawCircle((rectBounds/2), (sideLength/2),20, red);
                 //canvas.drawText("(" + i * rectBounds + ", " + j * rectBounds + ")", rectBounds/2, rectBounds/2, textPainter);
-                canvas.drawText("(" + i  + ", " + j   + ")", (rectBounds/2)-30, (rectBounds/2), textPainter);
+                //canvas.drawText("(" + i  + ", " + j   + ")", (rectBounds/2)-30, (rectBounds/2), textPainter);
                 //Restore to the starting origin.
                 canvas.restore();
 
@@ -194,6 +218,7 @@ public class MinesBoard extends View {
 
             //Restore the canvas to the starting origin. Remember that restores must match saves (stack/LIFO).
             canvas.restore();
+            //mycanvas=canvas;
 
         }//for i outer loop.
 
@@ -207,4 +232,64 @@ public class MinesBoard extends View {
         }
 
     }//onDraw()
+    public boolean drawUncoveredRectangle(int col, int row){
+        if(minesarray[row][col].covered)
+            return true;
+        else
+            return false;
+    }
+    //Handle events.
+    public boolean onTouchEvent(MotionEvent event){
+        Log.d("Touch","Touch event occured");
+        //Get where the event occurred.
+        float x = event.getX();
+        float y = event.getY();
+
+        //The first argument to Toast must always be a context. Not always an activity.this reference.
+        //Here, getContext() must be used.
+        Toast.makeText(getContext(),"Touch at (" + x + ", " +  y + ")", Toast.LENGTH_SHORT ).show();
+
+        //This width and height of the touch area.
+        float width = getWidth();
+        float height = rectBounds * 10;
+
+        //float height = getHeight();
+
+        //10 x 10 matrix. The row height and column width.
+        float rowHeight = height/10;
+        float colWidth = width/10;
+
+        //Get the square that was touched.
+        int row = 0;
+        int col = 0;
+        int[][] rowCol = new int[10][10];
+
+        int i, j;
+        for(i=1; i<=10; i++) {
+            if (x < (i * colWidth)) {
+                col = i;
+                break;
+            }// if cols
+        }//for cols
+
+        for (j=1; j<=10; j++) {
+            if (y < (j * rowHeight)) {
+                row = j;
+                break;
+            }//if rows.
+        }//for rows.
+
+
+        Toast.makeText(getContext(), "Row:" + row + "Col:" + col, Toast.LENGTH_SHORT).show();
+        uncoverPoint(row,col);
+        invalidate();
+
+
+        return super.onTouchEvent(event);
+
+
+    }//onTouchEvent()
+    public void uncoverPoint(int i, int j){
+        minesarray[i-1][j-1].covered=false;
+    }
 }

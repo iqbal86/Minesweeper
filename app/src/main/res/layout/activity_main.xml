@@ -31,8 +31,8 @@ android:layout_height="match_parent"
             android:layout_height="wrap_content"
             android:layout_toRightOf="@id/MarkButton"
             android:layout_centerHorizontal="false"
-            android:id="@+id/UncoverButton"
-            android:text="Uncover Mode"
+            android:id="@+id/ResetButton"
+            android:text="Reset"
             android:layout_marginStart="50dp" />
     </RelativeLayout>
 

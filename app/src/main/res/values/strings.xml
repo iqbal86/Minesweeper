@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Minesweeper</string>
+    <string name="example_string">Example string</string>
 </resources>

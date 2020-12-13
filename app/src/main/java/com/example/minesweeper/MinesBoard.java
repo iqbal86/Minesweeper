@@ -29,7 +29,7 @@ public class MinesBoard extends View {
     private float mTextWidth;
     private float mTextHeight;
     private Paint red, green, blue,black,white, p;
-    int paddingLeft ,paddingTop,paddingRight,paddingBottom;
+    int paddingLeft ,paddingTop,paddingRight,paddingBottom,contentWidth,contentHeight;
 
 
     Rect square;
@@ -90,6 +90,8 @@ public class MinesBoard extends View {
         paddingTop = getPaddingTop();
         paddingRight = getPaddingRight();
         paddingBottom = getPaddingBottom();
+        contentWidth = getWidth() - paddingLeft - paddingRight;
+        contentHeight = getHeight() - paddingTop - paddingBottom;
         // Update TextPaint and text measurements from attributes
         //invalidateTextPaintAndMeasurements();
 
@@ -117,8 +119,8 @@ public class MinesBoard extends View {
         //int paddingRight = getPaddingRight();
         //int paddingBottom = getPaddingBottom();
 
-        int contentWidth = getWidth() - paddingLeft - paddingRight;
-        int contentHeight = getHeight() - paddingTop - paddingBottom;
+        //int contentWidth = getWidth() - paddingLeft - paddingRight;
+        //int contentHeight = getHeight() - paddingTop - paddingBottom;
 
         setBackgroundColor(BlockColor);
 

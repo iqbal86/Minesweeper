@@ -2,6 +2,7 @@ package com.example.minesweeper;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -15,6 +16,8 @@ import android.view.MotionEvent;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+
+import java.util.Random;
 
 public class MinesBoard extends View {
     private String mExampleString;
@@ -110,8 +113,25 @@ public class MinesBoard extends View {
                 minesarray[i][j].mine=false;
             }
         }
+        placemines();
     }
-
+    public void placemines(){
+        int count=0;
+       while(count<20){
+           int row=getRandom();
+           int col= getRandom();
+           if(minesarray[row][col].mine==false){
+               minesarray[row][col].mine=true;
+               count++;
+           }
+       }
+    }
+    public int getRandom(){
+        final int min = 0;
+        final int max = 9;
+        final int random = new Random().nextInt((max - min) + 1) + min;
+    return random;
+    }
     private void invalidateTextPaintAndMeasurements() {
         mTextPaint.setTextSize(mExampleDimension);
         mTextPaint.setColor(BlockColor);
@@ -155,6 +175,13 @@ public class MinesBoard extends View {
         Paint textPainter = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPainter.setColor(TextColor);
         textPainter.setTextSize(30);
+       // Typeface plain = Typeface.createFromAsset(assetManager, pathToFont);
+        //Typeface bold = Typeface.create(plain, Typeface.DEFAULT_BOLD);
+        Paint MinestextPainter = new Paint(Paint.ANTI_ALIAS_FLAG);
+        MinestextPainter.setColor(RectangleColor);
+        MinestextPainter.setTextSize(70);
+        MinestextPainter.setTypeface(Typeface.DEFAULT_BOLD);
+
 
 
 
@@ -200,16 +227,34 @@ public class MinesBoard extends View {
 
 
 
-                //Draw a square in this i,j position.
+                //Draw a square for a covered block
                 if(drawUncoveredRectangle(i,j)){
                     canvas.drawRect(square,p );
 
-                }else{
-                    canvas.drawRect(square, UncoveredBlock);
+
+                }else{ // Draw the square for an uncovered block
+                    if(minesarray[i][j].mine==true){ // check if to draw a mine
+
+                        canvas.drawRect(square,red );
+
+                    }else{
+                        canvas.drawRect(square, UncoveredBlock);
+
+                    }
+
 
                 }
+                // if block contains mine, then Draw a M as well
+                if(minesarray[i][j].mine==true){
+
+                    canvas.drawText("M", (rectBounds/2)-30, (rectBounds/2)+30, MinestextPainter);
+
+                }
+                //canvas.drawText("(" + i  + ", " + j   + ")", (rectBounds/2)-30, (rectBounds/2), textPainter);
+
                 //canvas.drawCircle((rectBounds/2), (sideLength/2),20, red);
                 //canvas.drawText("(" + i * rectBounds + ", " + j * rectBounds + ")", rectBounds/2, rectBounds/2, textPainter);
+
                 //canvas.drawText("(" + i  + ", " + j   + ")", (rectBounds/2)-30, (rectBounds/2), textPainter);
                 //Restore to the starting origin.
                 canvas.restore();

@@ -5,4 +5,6 @@ public class MineObject {
     int col;
     boolean mine;
     boolean covered;
+    boolean marked;
+    int neighbourmines;
 }

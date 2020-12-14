@@ -25,7 +25,7 @@ android:layout_height="match_parent"
             android:layout_height="wrap_content"
 
             android:id="@+id/MarkButton"
-            android:text="Mark Mode"
+            android:text="Uncover Mode"
             android:layout_marginStart="50dp" />
         <Button
             android:layout_marginLeft="50dp"
@@ -78,6 +78,7 @@ android:layout_height="match_parent"
             android:layout_height="50dp"
             android:layout_toRightOf="@id/marked_mines"
             android:gravity="center_horizontal"
+            android:id="@+id/markedNo_mines"
             android:layout_toEndOf="@id/marked_mines" />
 
 

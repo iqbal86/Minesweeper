@@ -27,16 +27,16 @@ public class MinesBoard extends View {
     private int TextColor,RedColor,YellowColor;
     private MineObject [][] minesarray= new MineObject[10][10];
     public boolean acceptInput=true;
-    public boolean uncoverMode=true;
+    public boolean markMode=false;
     private float mExampleDimension = 0;
     private Drawable mExampleDrawable;
 
     private TextPaint mTextPaint;
     private float mTextWidth;
     private float mTextHeight;
-    private Paint red, UncoveredBlock, blue,black,white, p;
+    private Paint red, UncoveredBlock, MarkedBlock,black,white, p;
     int paddingLeft ,paddingTop,paddingRight,paddingBottom,contentWidth,contentHeight;
-    //Canvas mycanvas;
+
 
     Rect square;
     int rectBounds;
@@ -57,10 +57,7 @@ public class MinesBoard extends View {
         init(attrs,defStyleAttr);
     }
 
-//    public MinesBoard(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-//        super(context, attrs, defStyleAttr, defStyleRes);
-//    }
-//
+
     public void init(AttributeSet attrs, int defStyle){
         // Load attributes
         final TypedArray a = getContext().obtainStyledAttributes(
@@ -102,12 +99,11 @@ public class MinesBoard extends View {
         contentWidth = getWidth() - paddingLeft - paddingRight;
         contentHeight = getHeight() - paddingTop - paddingBottom;
         initMinesArray();
-        // Update TextPaint and text measurements from attributes
-        //invalidateTextPaintAndMeasurements();
+
 
     }
     public void initMinesArray(){
-       //minesarray = new MineObject[10][10];
+
         for(int i=0;i<10;i++){
             for( int j=0;j<10;j++){
                 minesarray[i][j]=new MineObject();
@@ -115,9 +111,16 @@ public class MinesBoard extends View {
                 minesarray[i][j].row=i+1;
                 minesarray[i][j].covered=true;
                 minesarray[i][j].mine=false;
+                minesarray[i][j].marked=false;
+                minesarray[i][j].neighbourmines=0;
+
+
             }
         }
         placemines();
+        updatenumbers();
+
+
     }
     public void placemines(){
         int count=0;
@@ -129,6 +132,75 @@ public class MinesBoard extends View {
                count++;
            }
        }
+    }
+    public void updatenumbers(){
+        int count;
+        for(int i=0;i<10;i++){
+            for( int j=0;j<10;j++){
+                count=0;
+                if(!minesarray[i][j].mine){ // if this is not a mine itself
+                    try{
+                    if(minesarray[i+1][j]!=null){
+                        if(minesarray[i+1][j].mine==true){
+                            count++;
+                        }
+                    }
+                    }catch(Exception e){}
+                    try{
+                    if(minesarray[i-1][j]!=null){
+                        if(minesarray[i-1][j].mine==true){
+                            count++;
+                        }
+                    }
+                    }catch(Exception e){}
+                    try{
+                    if(minesarray[i][j+1]!=null){
+                        if(minesarray[i][j+1].mine==true){
+                            count++;
+                        }
+                    }
+                    }catch(Exception e){}
+                    try{
+                    if(minesarray[i][j-1]!=null){
+                        if(minesarray[i][j-1].mine==true){
+                            count++;
+                        }
+                    }
+                    }catch(Exception e){}
+                    try{
+                    if(minesarray[i+1][j+1]!=null){
+                        if(minesarray[i+1][j+1].mine==true){
+                            count++;
+                        }
+                    }
+                    }catch(Exception e){}
+                    try{
+                    if(minesarray[i-1][j-1]!=null){
+                        if(minesarray[i-1][j-1].mine==true){
+                            count++;
+                        }
+                    }
+                    }catch(Exception e){}
+                    try{
+                    if(minesarray[i+1][j-1]!=null){
+                        if(minesarray[i+1][j-1].mine==true){
+                            count++;
+                        }
+                    }
+                    }catch(Exception e){}
+                    try{
+                    if(minesarray[i-1][j+1]!=null){
+                        if(minesarray[i-1][j+1].mine==true){
+                            count++;
+                        }
+                    }}catch(Exception e){}
+
+
+                }
+                minesarray[i][j].neighbourmines=count;
+
+            }
+        }
     }
     public int getRandom(){
         final int min = 0;
@@ -163,6 +235,10 @@ public class MinesBoard extends View {
         UncoveredBlock = new Paint(Paint.ANTI_ALIAS_FLAG);
         UncoveredBlock.setColor(UncoveredRectangleColor);
 
+        MarkedBlock = new Paint(Paint.ANTI_ALIAS_FLAG);
+        MarkedBlock.setColor(YellowColor);
+
+
         Paint textPainter = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPainter.setColor(TextColor);
         textPainter.setTextSize(30);
@@ -171,10 +247,6 @@ public class MinesBoard extends View {
         MinestextPainter.setColor(RectangleColor);
         MinestextPainter.setTextSize(70);
         MinestextPainter.setTypeface(Typeface.DEFAULT_BOLD);
-
-
-
-
         red = new Paint(Paint.ANTI_ALIAS_FLAG);
         red.setColor(RedColor);
 
@@ -216,36 +288,36 @@ public class MinesBoard extends View {
 
 
 
+
                 //Draw a square for a covered block
                 if(minesarray[i][j].covered){
+                    if(minesarray[i][j].marked){
+                        canvas.drawRect(square,MarkedBlock );
+                    }else{
                     canvas.drawRect(square,p );
-
-
+                    }
                 }else{ // Draw the square for an uncovered block
+
                     if(minesarray[i][j].mine==true){ // check if to draw a mine
 
                         canvas.drawRect(square,red );
 
                     }else{
+
                         canvas.drawRect(square, UncoveredBlock);
+                        canvas.drawText(String.valueOf(minesarray[i][j].neighbourmines), (rectBounds/2)-30, (rectBounds/2)+30, MinestextPainter);
 
                     }
 
 
                 }
                 // if block contains mine, then Draw a M as well
-                if(minesarray[i][j].mine==true){
+                if(minesarray[i][j].mine==true && !minesarray[i][j].covered){
 
                     canvas.drawText("M", (rectBounds/2)-30, (rectBounds/2)+30, MinestextPainter);
 
                 }
-                //canvas.drawText("(" + i  + ", " + j   + ")", (rectBounds/2)-30, (rectBounds/2), textPainter);
 
-                //canvas.drawCircle((rectBounds/2), (sideLength/2),20, red);
-                //canvas.drawText("(" + i * rectBounds + ", " + j * rectBounds + ")", rectBounds/2, rectBounds/2, textPainter);
-
-                //canvas.drawText("(" + i  + ", " + j   + ")", (rectBounds/2)-30, (rectBounds/2), textPainter);
-                //Restore to the starting origin.
                 canvas.restore();
 
             }//for j inner loop.
@@ -266,12 +338,7 @@ public class MinesBoard extends View {
         }
 
     }//onDraw()
-    public boolean drawUncoveredRectangle(int col, int row){
-        if(minesarray[row][col].covered)
-            return true;
-        else
-            return false;
-    }
+
     //Handle events.
     public boolean onTouchEvent(MotionEvent event){
         Log.d("Touch","Touch event occured");
@@ -280,9 +347,6 @@ public class MinesBoard extends View {
             float x = event.getX();
             float y = event.getY();
 
-            //The first argument to Toast must always be a context. Not always an activity.this reference.
-            //Here, getContext() must be used.
-            //Toast.makeText(getContext(), "Touch at (" + x + ", " + y + ")", Toast.LENGTH_SHORT).show();
 
             //This width and height of the touch area.
             float width = getWidth();
@@ -315,7 +379,6 @@ public class MinesBoard extends View {
             }//for rows.
 
 
-           // Toast.makeText(getContext(), "Row:" + row + "Col:" + col, Toast.LENGTH_SHORT).show();
             uncoverPoint(col, row);
             invalidate();
 
@@ -328,11 +391,36 @@ public class MinesBoard extends View {
 
     }//onTouchEvent()
     public void uncoverPoint(int i, int j){
-        minesarray[i-1][j-1].covered=false;
-        if(minesarray[i-1][j-1].mine==true){
-            acceptInput=false;
-            Toast.makeText(getContext(), "Mine Uncovered", Toast.LENGTH_SHORT).show();
+        if(markMode && minesarray[i-1][j-1].covered){ // if the mode is mark mode and cell in not un covered.
+            if(minesarray[i-1][j-1].marked){
+                minesarray[i-1][j-1].marked=false;
+            }else{
+                minesarray[i-1][j-1].marked=true;
+            }
+            ((MainActivity) getContext()).updatenumbers();
+        }else{
+            if( !minesarray[i-1][j-1].marked){
+                minesarray[i-1][j-1].covered=false;
+                if(minesarray[i-1][j-1].mine==true){
+                    acceptInput=false;
+                    Toast.makeText(getContext(), "Mine Uncovered", Toast.LENGTH_SHORT).show();
+                }
+            }
+
         }
+
+
+
+    }
+    public int getMarkedMines(){
+        int count=0;
+        for(int i=0;i<10;i++){
+            for( int j=0;j<10;j++){
+            if(minesarray[i][j].marked)
+                count++;
+            }
+        }
+        return count;
     }
 
 }

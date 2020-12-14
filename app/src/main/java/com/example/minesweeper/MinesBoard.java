@@ -13,6 +13,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.text.TextPaint;
 import android.view.MotionEvent;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -25,7 +26,8 @@ public class MinesBoard extends View {
     private int RectangleColor,UncoveredRectangleColor;
     private int TextColor,RedColor,YellowColor;
     private MineObject [][] minesarray= new MineObject[10][10];
-
+    public boolean acceptInput=true;
+    public boolean uncoverMode=true;
     private float mExampleDimension = 0;
     private Drawable mExampleDrawable;
 
@@ -51,6 +53,7 @@ public class MinesBoard extends View {
 
     public MinesBoard(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+
         init(attrs,defStyleAttr);
     }
 
@@ -64,6 +67,7 @@ public class MinesBoard extends View {
                 attrs, R.styleable.MinesBoard, defStyle, 0);
 
         //Read a string from string.xml.
+
         mExampleString = getResources().getString(R.string.example_string);
         //Get a color from color.xml.
         BlockColor = getResources().getColor(R.color.white);
@@ -144,19 +148,6 @@ public class MinesBoard extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        //setPadding(10, 10, 10, 10);
-
-
-        // TODO: consider storing these as member variables to reduce
-        // allocations per draw cycle.
-       // int paddingLeft = getPaddingLeft();
-        //int paddingTop = getPaddingTop();
-        //int paddingRight = getPaddingRight();
-        //int paddingBottom = getPaddingBottom();
-
-        //int contentWidth = getWidth() - paddingLeft - paddingRight;
-        //int contentHeight = getHeight() - paddingTop - paddingBottom;
-
         setBackgroundColor(BlockColor);
 
 
@@ -175,8 +166,7 @@ public class MinesBoard extends View {
         Paint textPainter = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPainter.setColor(TextColor);
         textPainter.setTextSize(30);
-       // Typeface plain = Typeface.createFromAsset(assetManager, pathToFont);
-        //Typeface bold = Typeface.create(plain, Typeface.DEFAULT_BOLD);
+
         Paint MinestextPainter = new Paint(Paint.ANTI_ALIAS_FLAG);
         MinestextPainter.setColor(RectangleColor);
         MinestextPainter.setTextSize(70);
@@ -190,7 +180,6 @@ public class MinesBoard extends View {
 
 
 
-        //canvas.drawRect(-100, -120, 50, 80, p );
         canvas.save();
         canvas.translate(0,0);
 
@@ -228,7 +217,7 @@ public class MinesBoard extends View {
 
 
                 //Draw a square for a covered block
-                if(drawUncoveredRectangle(i,j)){
+                if(minesarray[i][j].covered){
                     canvas.drawRect(square,p );
 
 
@@ -263,7 +252,7 @@ public class MinesBoard extends View {
 
             //Restore the canvas to the starting origin. Remember that restores must match saves (stack/LIFO).
             canvas.restore();
-            //mycanvas=canvas;
+
 
         }//for i outer loop.
 
@@ -286,55 +275,64 @@ public class MinesBoard extends View {
     //Handle events.
     public boolean onTouchEvent(MotionEvent event){
         Log.d("Touch","Touch event occured");
-        //Get where the event occurred.
-        float x = event.getX();
-        float y = event.getY();
+        if(acceptInput) {
+            //Get where the event occurred.
+            float x = event.getX();
+            float y = event.getY();
 
-        //The first argument to Toast must always be a context. Not always an activity.this reference.
-        //Here, getContext() must be used.
-        Toast.makeText(getContext(),"Touch at (" + x + ", " +  y + ")", Toast.LENGTH_SHORT ).show();
+            //The first argument to Toast must always be a context. Not always an activity.this reference.
+            //Here, getContext() must be used.
+            //Toast.makeText(getContext(), "Touch at (" + x + ", " + y + ")", Toast.LENGTH_SHORT).show();
 
-        //This width and height of the touch area.
-        float width = getWidth();
-        float height = rectBounds * 10;
+            //This width and height of the touch area.
+            float width = getWidth();
+            float height = rectBounds * 10;
 
-        //float height = getHeight();
+            //float height = getHeight();
 
-        //10 x 10 matrix. The row height and column width.
-        float rowHeight = height/10;
-        float colWidth = width/10;
+            //10 x 10 matrix. The row height and column width.
+            float rowHeight = height / 10;
+            float colWidth = width / 10;
 
-        //Get the square that was touched.
-        int row = 0;
-        int col = 0;
-        int[][] rowCol = new int[10][10];
+            //Get the square that was touched.
+            int row = 0;
+            int col = 0;
+            int[][] rowCol = new int[10][10];
 
-        int i, j;
-        for(i=1; i<=10; i++) {
-            if (x < (i * colWidth)) {
-                col = i;
-                break;
-            }// if cols
-        }//for cols
+            int i, j;
+            for (i = 1; i <= 10; i++) {
+                if (x < (i * colWidth)) {
+                    col = i;
+                    break;
+                }// if cols
+            }//for cols
 
-        for (j=1; j<=10; j++) {
-            if (y < (j * rowHeight)) {
-                row = j;
-                break;
-            }//if rows.
-        }//for rows.
-
-
-        Toast.makeText(getContext(), "Row:" + row + "Col:" + col, Toast.LENGTH_SHORT).show();
-        uncoverPoint(row,col);
-        invalidate();
+            for (j = 1; j <= 10; j++) {
+                if (y < (j * rowHeight)) {
+                    row = j;
+                    break;
+                }//if rows.
+            }//for rows.
 
 
+           // Toast.makeText(getContext(), "Row:" + row + "Col:" + col, Toast.LENGTH_SHORT).show();
+            uncoverPoint(col, row);
+            invalidate();
+
+        }else{
+            Toast.makeText(getContext(), "Game Lost, please click on Reset ", Toast.LENGTH_SHORT).show();
+
+        }
         return super.onTouchEvent(event);
 
 
     }//onTouchEvent()
     public void uncoverPoint(int i, int j){
         minesarray[i-1][j-1].covered=false;
+        if(minesarray[i-1][j-1].mine==true){
+            acceptInput=false;
+            Toast.makeText(getContext(), "Mine Uncovered", Toast.LENGTH_SHORT).show();
+        }
     }
+
 }
